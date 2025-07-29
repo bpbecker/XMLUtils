@@ -149,7 +149,7 @@
           verbose{0=⍺:{}⍵ ⋄ ⎕←⍵}msg←⎕DMX.Message
           pos←msg parsePos≢html
           tag←pos getTag html
-          :If pos=lastpos ⍝ error in same position?
+          :If (pos=lastpos)>msg endsWith'none expected' ⍝ error in same position?
               ∘∘∘
           :ElseIf ~0∊⍴scriptInsert←pos inScript html
               html←scriptInsert fixScript html
@@ -187,28 +187,31 @@
           :ElseIf msg beginsWith'Orphaned data'
               html←pos fixOrphanedData html
               →Try
+          :ElseIf msg beginsWith'Attribute, ''>'' or ''/>'' expected'
+              →Try
           :Else
               ∘∘∘ ⍝ unhandled exception
           :EndIf
       :EndTrap
     ∇
 
-    ∇ r←xhtml Xfind specs;level;element;content;attr;value;to;max;parseLevel;lc;lco;contains;attrHits;attrMask;valueHits
-     ⍝ specs is delimited (first char denotes delimiter) list of '/level/element/content/attribute/value'
+    ∇ r←xml Xfind specs;level;element;content;attr;value;to;max;parseLevel;lc;lco;contains;attrHits;attrMask;valueHits;type;types
+     ⍝ specs is delimited (first char denotes delimiter) list of '/level/element/content/attribute/value/type'
      ⍝ level[+|-[n]] : 3 matches level 3, 3+ matches 3 and higher, 3- matches 3 and lower, 3-5 matches 3 thru 5
      ⍝ element: space delimited list of element names
      ⍝ content: uses case insensitive
      ⍝ attribute: attribute name (if value is not present, use only the existence of attribute)
      ⍝ value: attribute value: uses case insensitive (if attribute is not present, search all attribute values)
-      r←(≢xhtml)⍴1
-      →exit⍴⍨0∊⍴specs←1↓¨specs⊂⍨specs=⊃specs
-      (level element content attr value)←5↑specs,5⍴⊂''
+     ⍝ type: numeric value(s) to match on [;5] (see ⎕XML documentation).
+      r←(≢xml)⍴1
+      →exit⍴⍨0∊⍴specs←1↓¨(specs=⊃specs)⊂specs
+      (level element content attr value type)←6↑specs,6⍴⊂''
       lc←{2::0(819⌶)⍵ ⋄ ⎕C ⍵}
       lco←{(lc ⍺)⍺⍺ lc ⍵}
       contains←{∨/⍺⍷lco ⍵}
       :If ~0∊⍴level
-          max←⌈/xhtml[;1]
           'Bad level specification'⎕SIGNAL 11/⍨~∧/level∊⎕D,' ,-+'
+          max←⌈/xml[;1]
           parseLevel←{
               to←{⍺←⍵ ⋄ ⍺,⍺+(¯1*⍺>⍵)×⍳|⍺-⍵}
               p←{0∊⍴⍵:⍺ m max ⋄ ⍺ to ⍵}
@@ -219,48 +222,57 @@
               v,←('mp'∊⍨⊢/v~' ')/'⍬'
               ⍎v
           }
-          r∧←r\(r/xhtml[;1])∊max parseLevel level
+          r∧←r\(r/xml[;1])∊max parseLevel level
           →exit⍴⍨~∨/r
       :EndIf
       :If ~0∊⍴element
-          r∧←r\(r/xhtml[;2])∊lco element⊆⍨element≠' '
+          r∧←r\(r/xml[;2])∊lco element⊆⍨element≠' '
           →exit⍴⍨~∨/r
       :EndIf
       :If ~0∊⍴content
-          r∧←r\content∘contains¨r/xhtml[;3]
+          r∧←r\content∘contains¨r/xml[;3]
           →exit⍴⍨~∨/r
       :EndIf
       attrHits←⍬
       :If ~0∊⍴attr
-          attrHits←(attr⊆⍨attr≠' ')∘{⍵[;1]∊⍺}¨r/xhtml[;4]
+          attrHits←(attr⊆⍨attr≠' ')∘{⍵[;1]∊⍺}¨r/xml[;4]
           r∧←r\attrMask←∨/¨attrHits
           →exit⍴⍨~∨/r
       :EndIf
       :If ~0∊⍴value
-          valueHits←∨/¨value∘{∨/¨(⊂⍺)⍷lco¨⍵[;2]}¨r/xhtml[;4]
+          valueHits←∨/¨value∘{∨/¨(⊂⍺)⍷lco¨⍵[;2]}¨r/xml[;4]
           :If ~0∊⍴attrHits
               valueHits∧←attrMask/attrHits
           :EndIf
           r∧←r\∨/¨valueHits
+          →exit⍴⍨~∨/r
+      :EndIf
+      :If ~0∊⍴type
+          'Bad type specification'⎕SIGNAL 11/⍨~∧/type∊⎕D,' '
+          types←∪⍎type
+          r∧←r\(r/xml[;5])∊types
       :EndIf
      
      exit:
     ∇
 
-      Xsel←{
-      ⍝ ⍺ - xml matrix
-      ⍝ ⍵ - Boolean of selected nodes (result from Xfind)
-      ⍝ ← - nodes+descendents
-          {⍵⌿⍨∧\1,1↓⍵[;1]>⊃⍵[;1]}¨((1@(⍸⍵))(≢⍺)⍴0)⊂[1]⍺
+      Xselect←{
+      ⍝ ⍺⍺ - xml matrix
+      ⍝ ⍺  - Boolean indicating whether to include descendents
+      ⍝ ⍵  - Boolean of selected nodes (result from Xfind)
+      ⍝ ←  - nodes+descendents
+          ⍺←1
+          ⍺:{⍵⌿⍨∧\1,1↓⍵[;1]>⊃⍵[;1]}¨((1@(⍸⍵))(≢⍺⍺)⍴0)⊂[1]⍺⍺
+          1⊂[1]⍵⌿⍺⍺
       }
 
-    ∇ xml←repl(xml Xrepl)elements;mask;n;i;inds;rep;ind;elms
+    ∇ xml←repl(xml Xreplace)elements;mask;n;i;inds;rep;ind;elms
     ⍝ xml      - xml matrix or string
     ⍝ repl     - new xml (or string(s)) for elements
     ⍝ elements - boolean marking the elements in xml (or string for Xfind)
     ⍝ ←  - updated xml matrix
       xml←⎕XML⍣(''=⍥⎕DR xml)⊢xml
-      elms←xml Xsel elements←xml Xfind⍣(~2|⎕DR elements)⊢elements
+      elms←xml Xselect elements←xml Xfind⍣(~2|⎕DR elements)⊢elements
       repl←⎕XML⍣(''=⍥⎕DR repl)⊢repl
       repl←⊂⍣(2=≢⍴repl)⊢repl
       ⎕SIGNAL 5/⍨(≢repl)(~∊)1,n←≢inds←⍸elements
@@ -292,32 +304,55 @@
       xml[⍸~mask;]←↑⊃,/↓¨ins
     ∇
 
-    ∇ xml←(xml Xdelete)elements;mask
+    ∇ xml←{kids}(xml Xdelete)elements;mask;bal
     ⍝ delete xml elements
     ⍝ xml      - xml matrix or string
     ⍝ elements - boolean marking the elements to be deleted (or string for Xfind)
     ⍝ ←        - updated xml matrix
+      bal←{ ⍝ rebalance levels after deletion
+          ⍺←⍬
+          0∊⍴⍵:⍺
+          0∊⍴⍺:(⊃⍵)∇ 1↓⍵
+          ¯1>(⊃¯1↑⍺)-⊃⍵:(⍺,1+⊢/⍺)∇ 1↓⍵
+          (⍺,⊃⍵)∇ 1↓⍵
+      }
+      kids←{6::⍵ ⋄ kids}1
       xml←⎕XML⍣(''=⍥⎕DR xml)⊢xml
       elements←xml Xfind⍣(~2|⎕DR elements)⊢elements
-      mask←1⍴⍨≢xml
-      mask[∊xml[;1]∘{⍵+0,⍳+/∧\⍺[⍵]<⍵↓⍺}¨⍸elements]←0
-      xml⌿⍨←mask
+      :If 0=kids ⍝ if not including descendent elements
+          xml⌿⍨←~elements ⍝ just remove the marked ones
+          xml[;1]←bal xml[;1] ⍝ and rebalance the levels
+      :Else
+          mask←1⍴⍨≢xml
+          mask[∊xml[;1]∘{⍵+0,⍳+/∧\⍺[⍵]<⍵↓⍺}¨⍸elements]←0
+          xml⌿⍨←mask
+      :EndIf
     ∇
 
 
       Xattr←{
-     ⍝ ⍺ - xml matrix/matrices
+     ⍝ ⍺ - case-insensitive comparison?
+     ⍝ ⍺⍺ - xml matrix/matrices
      ⍝ ⍵ - attribute name to search for
      ⍝ ← - values (if any) for that attribute
-          4=|≡⍺:⍺ ∇¨⊂⍵
-          ⍵{(⍵[;2],⊂'')[⍵[;1]⍳⊂⍺]}↑⊃,/↓¨⍺[;4]
+          0∊⍴⍺⍺:''
+          ⍺←0
+          4=|≡⍺⍺:(⍺((⊃⍺⍺)∇∇)¨⊂⍵),⊃⍺((1↓⍺⍺)∇∇)¨⊂⍵
+          2=|≡⍵:⍺(⍺⍺ ∇∇)¨⍵
+          ' '∊⍵:⍺(⍺⍺ ∇∇)¨' '(≠⊆⊢)⍵
+          regex←{∊1⌽'$^',∊('.',(⊂'.+'),⍵)[('?*',⍵)⍳⍵]} ⍝ convert wildcard to regex
+          ic←⍺
+          ⍵{⍵[(regex ⍺)⎕S{1+⍵.BlockNum}⍠'IC'ic⊢⍵[;1];2]}↑⊃,/↓¨⍺⍺[;4]
       }
 
       Xattrval←{
       ⍝ ⍺ - xml matrix
       ⍝ ⍵ - Xfind selection with attribute name populated. e.g. '/2/a//href' or just '////src'
       ⍝ ← - vector of vectors of matching attribute values
-          ∪⊃,/(⍺ Xsel ⍺ Xfind ⍵)Xattr 1↓4⊃(⊢⊂⍨⊢=⊃)⍵
+          ⍺←0
+          0∊⍴⍺⍺:''
+          0∊⍴⍵:''
+          ⍺((↑⊃,/↓¨⍺⍺ Xselect ⍺⍺ Xfind ⍵)Xattr)1↓4⊃{⍵↑⍨4⌈≢⍵}(⊢⊂⍨⊢=⊃)⍵
       }
 
 :EndNamespace
