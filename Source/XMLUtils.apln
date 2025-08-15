@@ -1,4 +1,4 @@
-:Namespace XMLUtils
+﻿:Namespace XMLUtils
 
     ⎕IO←⎕ML←1
 
@@ -37,7 +37,7 @@
       :EndIf
     ∇
 
-    ∇ r←{verbose}HTMLtoXHTML html;lco;beginsWith;last;fixAmpersand;fixAttribute;inScript;fixScript;quoteAttr;closes;inds;noclose;msg;pos;scriptInsert;next;fixComment;char;fixAttributeCharacter;makeEntity;fixBadTag;fixMismatch;expect;lastpos;parsePos;endsWith;fixOrphan;fixImbalance;lc;tag;getTag;fixOrphanedData
+    ∇ r←{verbose}HTMLtoXHTML html;lco;beginsWith;last;fixAmpersand;fixAttribute;inScript;fixScript;quoteAttr;closes;inds;noclose;msg;pos;scriptInsert;next;fixComment;char;fixAttributeCharacter;makeEntity;fixBadTag;fixMismatch;expect;lastpos;parsePos;endsWith;fixOrphan;fixImbalance;lc;tag;getTag;fixOrphanedData;origTag;tagPos;tagpos;lasttagpos;newTag
     ⍝ attempt to convert a character vector containing HTML to ⎕XML matrix format XHTML
     ⍝ html    - HTML character vector
     ⍝ verbose - display intermediate ⎕XML errors?
@@ -128,9 +128,11 @@
           ((ind-1)↑⍵),(≢tag)⌽(ind-1)↓⍵
       }
       getTag←{ ⍝ get the tag at this position
-          ⍝ ⍺=pos, ⍵=html
+          ⍝ ⍺=pos
+          ⍝ ⍵=html
+          ⍝ ←=[1] tag pos [2] tag content
           3::'' ⍝ index error, no tag
-          ⍵{(⍵[2]-1)↓⍵[1]↑⍺}(⍺+⍺(⍵ next)'>'),⍺(⍵ last)'<'}
+          ⍵{⍵[2],⊂(⍵[2]-1)↓⍵[1]↑⍺}(⍺+⍺(⍵ next)'>'),⍺(⍵ last)'<'}
      
       html~←⎕UCS 11 ⍝ remove vertical tab characters
      
@@ -140,17 +142,24 @@
       inds←closes[⍸∨⌿<\(⍸⊃∨/(noclose(⍷lco)¨⊂html))∘.<closes]
       html[inds[⍸'/'≠html[inds-1]]]←⊂'/>'
       html←∊html
-      pos←0
+      tagpos←pos←0
      Try:
-      lastpos←pos
+      lastpos←pos ⋄ lasttagpos←tagpos
       :Trap 11
           r←(⎕XML⍠('Markup' 'Preserve')('UnknownEntity' 'Preserve'))html
       :Else
           verbose{0=⍺:{}⍵ ⋄ ⎕←⍵}msg←⎕DMX.Message
           pos←msg parsePos≢html
-          tag←pos getTag html
+          (tagpos tag)←pos getTag html
+     
+          :If tagpos≠lasttagpos ⋄ origTag←tag ⋄ :EndIf ⍝ preserve original tag
           :If (pos=lastpos)>msg endsWith'none expected' ⍝ error in same position?
-              ∘∘∘
+              :If origTag≡newTag←lastChance origTag
+                  ∘∘∘
+              :Else
+                  html←((tagpos-1)↑html),newTag,(¯1+tagpos+≢tag)↓html
+                  →Try
+              :EndIf
           :ElseIf ~0∊⍴scriptInsert←pos inScript html
               html←scriptInsert fixScript html
               →Try
@@ -193,6 +202,44 @@
               ∘∘∘ ⍝ unhandled exception
           :EndIf
       :EndTrap
+    ∇
+
+    ∇ r←lastChance tag;ind;name;close;end;attrs;new;attr;aname;endq;a;val
+    ⍝ last ditch effort to clean up a messed up tag
+      r←tag
+      →0⍴⍨(≢tag)<ind←⌊/tag⍳' />'
+      name←tag↑⍨ind-1
+      →0⍴⍨tag[ind]∊'/>'
+      end←-+/∧\'>/'=⌽¯2↑tag
+      close←end↑tag
+      attrs←' ',⍨{(' '=⊃⍵)↓⍵/⍨2∨/0,⍨' '≠⍵}ind↓end↓tag
+      new←' '
+      :While ~0∊⍴attrs
+          ind←⌊/attrs⍳' ='
+          attr←(ind-1)↑attrs
+          :If ' '=attrs[ind]
+              new,←attr,'="',attr,'" '
+              attrs←ind↓attrs
+          :Else
+              :If 0∊⍴aname←(ind-1)↑attrs ⍝ no attribute name?
+                  →0⊣r←tag ⍝ bail out
+              :Else
+                  :Select (attrs,' ')[ind+1]
+                  :Case ' '
+                      new,←aname,'="',aname,'" '
+                      attrs←(ind+1)↓attrs
+                  :Case '"'
+                      endq←{⊢⌿⍸(⍵='"')∧~∨\⍵='='}ind↓attrs ⍝ ending quote
+                      val←1⌽'""',∊(⊂'&quot;')@(=∘'"')⊢1↓¯1↓endq↑ind↓attrs
+                      new,←aname,'=',val,' '
+                      attrs←(⊢↓⍨' '=⊃)(ind+endq)↓attrs
+                  :Else
+                      ∘∘∘
+                  :EndSelect
+              :EndIf
+          :EndIf
+      :EndWhile
+      r←name,new,close
     ∇
 
     ∇ r←xml Xfind specs;level;element;content;attr;value;to;max;parseLevel;lc;lco;contains;attrHits;attrMask;valueHits;type;types
