@@ -3,7 +3,7 @@
     ⎕IO←⎕ML←1
 
     ∇ r←Version
-      r←'XMLUtils' '1.1.0' '2025-08-15'
+      r←'XMLUtils' '1.1.1' '2025-08-25'
     ∇
 
     ∇ r←Documentation
@@ -37,7 +37,7 @@
       :EndIf
     ∇
 
-    ∇ r←{verbose}HTMLtoXHTML html;lco;beginsWith;last;fixAmpersand;fixAttribute;inScript;fixScript;quoteAttr;closes;inds;noclose;msg;pos;scriptInsert;next;fixComment;char;fixAttributeCharacter;makeEntity;fixBadTag;fixMismatch;expect;lastpos;parsePos;endsWith;fixOrphan;fixImbalance;lc;tag;getTag;fixOrphanedData;origTag;tagPos;tagpos;lasttagpos;newTag
+    ∇ r←{verbose}HTMLtoXHTML html;lco;beginsWith;last;fixAmpersand;fixAttribute;inScript;fixScript;quoteAttr;closes;inds;noclose;msg;pos;scriptInsert;next;fixComment;char;fixAttributeCharacter;makeEntity;fixBadTag;fixMismatch;expect;lastpos;parsePos;endsWith;fixOrphan;fixImbalance;lc;tag;getTag;fixOrphanedData;origTag;tagPos;tagpos;lasttagpos;newTag;fixTagEnd
     ⍝ attempt to convert a character vector containing HTML to ⎕XML matrix format XHTML
     ⍝ html    - HTML character vector
     ⍝ verbose - display intermediate ⎕XML errors?
@@ -106,7 +106,7 @@
           '>'≠pos⊃⍵:⎕SIGNAL err
           tag←{⍵↓⍨0⌈¯1+¯1↑⍸'<'=⍵}pos↑⍵
           0=len←⊃'<\/\w*>|<\w*\/>'⎕S 1⊢tag:⎕SIGNAL err
-          ((pos-len)↑⍵),expect,(pos-len)↓⍵
+          ((pos-len)↑⍵),expect,pos↓⍵
       }
       fixImbalance←{ ⍝ ⎕XML expected a particular closing tag, so we insert it
           err←⊂↓'EM' 'EN' 'Message',⍪⎕DMX.(EM EN Message)
@@ -126,6 +126,10 @@
           ind←⍺(⍵ last)'</'
           tag←ind getTag ⍵
           ((ind-1)↑⍵),(≢tag)⌽(ind-1)↓⍵
+      }
+      fixTagEnd←{ ⍝ 'Attribute, ''>'' or ''/>'' expected'
+          '\>'≡2↑(⍺-1)↓⍵:w⊣w[⍺]←'/'⊣w←⍵
+          ((⍺-1)↑⍵),'>',(⍺-1)↓⍵
       }
       getTag←{ ⍝ get the tag at this position
           ⍝ ⍺=pos
@@ -153,7 +157,7 @@
           (tagpos tag)←pos getTag html
      
           :If tagpos≠lasttagpos ⋄ origTag←tag ⋄ :EndIf ⍝ preserve original tag
-          :If (pos=lastpos)>msg endsWith'none expected' ⍝ error in same position?
+          :If (pos=lastpos)>(msg endsWith'none expected')∨msg beginsWith'Attribute, ''>'' or ''/>'' expected' ⍝ error in same position?
               :If origTag≡newTag←lastChance origTag
                   ∘∘∘
               :Else
@@ -197,6 +201,7 @@
               html←pos fixOrphanedData html
               →Try
           :ElseIf msg beginsWith'Attribute, ''>'' or ''/>'' expected'
+              html←pos fixTagEnd html
               →Try
           :Else
               ∘∘∘ ⍝ unhandled exception
