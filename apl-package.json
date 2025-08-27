@@ -19,5 +19,5 @@
   source: "source/XMLUtils.apln",
   tags: "mac-os,windows,linux,html,xml,xhtml,dyalog,pi",
   userCommandScript: "",
-  version: "1.1.1",
+  version: "1.1.2",
 }
