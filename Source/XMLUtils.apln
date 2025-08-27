@@ -3,7 +3,7 @@
     ⎕IO←⎕ML←1
 
     ∇ r←Version
-      r←'XMLUtils' '1.1.1' '2025-08-25'
+      r←'XMLUtils' '1.1.2' '2025-08-26'
     ∇
 
     ∇ r←Documentation
@@ -40,7 +40,7 @@
     ∇ r←{verbose}HTMLtoXHTML html;lco;beginsWith;last;fixAmpersand;fixAttribute;inScript;fixScript;quoteAttr;closes;inds;noclose;msg;pos;scriptInsert;next;fixComment;char;fixAttributeCharacter;makeEntity;fixBadTag;fixMismatch;expect;lastpos;parsePos;endsWith;fixOrphan;fixImbalance;lc;tag;getTag;fixOrphanedData;origTag;tagPos;tagpos;lasttagpos;newTag;fixTagEnd
     ⍝ attempt to convert a character vector containing HTML to ⎕XML matrix format XHTML
     ⍝ html    - HTML character vector
-    ⍝ verbose - display intermediate ⎕XML errors?
+    ⍝ verbose - 1 = display intermediate ⎕XML errors, 2 = display and stop on error
     ⍝ xml     - ⎕XML matrix format of XHTML
      
       verbose←{6::⍵ ⋄ verbose}0
@@ -105,7 +105,7 @@
           (pos expect)←⍺
           '>'≠pos⊃⍵:⎕SIGNAL err
           tag←{⍵↓⍨0⌈¯1+¯1↑⍸'<'=⍵}pos↑⍵
-          0=len←⊃'<\/\w*>|<\w*\/>'⎕S 1⊢tag:⎕SIGNAL err
+          0=len←⊃'<\/[a-zA-Z][a-zA-Z0-9\-\_\:\.]*>|<[a-zA-Z][a-zA-Z0-9\-\_\:\.]*\/>'⎕S 1⊢tag:⎕SIGNAL err
           ((pos-len)↑⍵),expect,pos↓⍵
       }
       fixImbalance←{ ⍝ ⎕XML expected a particular closing tag, so we insert it
@@ -136,14 +136,14 @@
           ⍝ ⍵=html
           ⍝ ←=[1] tag pos [2] tag content
           3::'' ⍝ index error, no tag
-          ⍵{⍵[2],⊂(⍵[2]-1)↓⍵[1]↑⍺}(⍺+⍺(⍵ next)'>'),⍺(⍵ last)'<'}
+          ⍵{⍵[2],⊂(⍵[2]-1)↓⍵[1]↑⍺}(⍺+(⍵[⍺]≠'>')×⍺(⍵ next)'>'),⍺(⍵ last)'<'}
      
       html~←⎕UCS 11 ⍝ remove vertical tab characters
-     
+      html↓⍨←-+/∧\(⌽html)∊⎕UCS 32 10 13 ⍝ remove trailing whitespace
       html←'<\/br>'⎕R'<br/>'⊢html ⍝ fix typo for <br/>
       closes←⍸'>'=html
-      noclose←'<',¨'area ' 'base ' 'basefont ' 'br ' 'br>' 'col ' 'frame ' 'hr ' 'hr>' 'img ' 'input ' 'isindex ' 'link ' 'meta ' 'param ' ⍝ elements with no closing tag
-      inds←closes[⍸∨⌿<\(⍸⊃∨/(noclose(⍷lco)¨⊂html))∘.<closes]
+      noclose←(⊂'[\s>]'),⍨¨'<',¨'area' 'base' 'basefont' 'br' 'br' 'col' 'frame' 'hr' 'hr' 'img' 'input' 'isindex' 'link' 'meta' 'param' ⍝ elements with no closing tag
+      inds←closes/⍨(≠∧×)(1+noclose ⎕S 0⍠'Mode' 'D'⊢html)⍸closes
       html[inds[⍸'/'≠html[inds-1]]]←⊂'/>'
       html←∊html
       tagpos←pos←0
@@ -154,7 +154,26 @@
       :Else
           verbose{0=⍺:{}⍵ ⋄ ⎕←⍵}msg←⎕DMX.Message
           pos←msg parsePos≢html
-          (tagpos tag)←pos getTag html
+          ((verbose≠2)↓(1+⊃⎕LC),⎕STOP⊃⎕SI)⎕STOP⊃⎕SI
+          ((⎕STOP⊃⎕SI)~⊃⎕LC)⎕STOP⊃⎕SI
+          :If pos=≢html
+              :If msg beginsWith'Tag mismatch at end of text;'
+                  :If msg endsWith'none expected'
+                      html↓⍨←-(⌽html)⍳'<'
+                      pos←≢html
+                      →Try
+                  :ElseIf html endsWith'</html>'
+                      html←(¯7↓html),(msg↓⍨⊢/⍸msg=' '),'</html>'
+                      →Try
+                  :Else
+                      ∘∘∘
+                  :EndIf
+              :Else
+                  ∘∘∘
+              :EndIf
+          :Else
+              (tagpos tag)←pos getTag html
+          :EndIf
      
           :If tagpos≠lasttagpos ⋄ origTag←tag ⋄ :EndIf ⍝ preserve original tag
           :If (pos=lastpos)>(msg endsWith'none expected')∨msg beginsWith'Attribute, ''>'' or ''/>'' expected' ⍝ error in same position?
@@ -162,6 +181,7 @@
                   ∘∘∘
               :Else
                   html←((tagpos-1)↑html),newTag,(¯1+tagpos+≢tag)↓html
+                  pos←lastpos
                   →Try
               :EndIf
           :ElseIf ~0∊⍴scriptInsert←pos inScript html
