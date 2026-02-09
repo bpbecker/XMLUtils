@@ -77,3 +77,13 @@ Having found XML elements using `Xfind`, you can use `Xselect` to select them an
 |`xml`|Either a single 5-column `⎕XML` matrix, or a string containing valid XML|
 |`repl`|Either a single 5-column `⎕XML` matrix, or a string containing valid XML to be inserted|
 |`r`|The resulting 5-column `⎕XML` matrix after the elements have been inserted|
+
+### `XMLtoJSON`
+`XMLtoJSON` converts XML to JSON
+
+|--|--|
+|Syntax|`json ← {convert} XMLtoJSON xml`|
+|`xml`|Character vector of valid XML|
+|`convert`|If set to `¯1`, element values that contain only digits will be converted to numbers.|
+|`json`|Character vector JSON representation of the XML (suitable for passing to `⎕JSON`)|
+|Notes|Element attributes in the XML are converted to named elements in the JSON representation.</br>`      XMLtoJSON '<foo goo="moo"><boo>hoo</boo></foo>`</br>`{"foo":{"goo":"moo","boo":"hoo"}}`</pre>|
