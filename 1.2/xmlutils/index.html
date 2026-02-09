@@ -1,0 +1,928 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../htmltoxhtml/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+      <link rel="icon" href="../img/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>XML Utilities - XMLUtils</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+      <link rel="stylesheet" href="../css/main.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xfind" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="XMLUtils" class="md-header__button md-logo" aria-label="XMLUtils" data-md-component="logo">
+      
+  <img src="../img/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            XMLUtils
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              XML Utilities
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BPBecker/XMLUtils" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    https://github.com/BPBecker/XMLUtils
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="XMLUtils" class="md-nav__button md-logo" aria-label="XMLUtils" data-md-component="logo">
+      
+  <img src="../img/logo.svg" alt="logo">
+
+    </a>
+    XMLUtils
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BPBecker/XMLUtils" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    https://github.com/BPBecker/XMLUtils
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../htmltoxhtml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    HTML to XHTML Conversion
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    XML Utilities
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    XML Utilities
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#xfind" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xfind
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xselect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xselect
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xattr" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xattr
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xattrval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xattrval
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xdelete" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xdelete
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xinsert" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xinsert
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xreplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xreplace
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xmltojson" class="md-nav__link">
+    <span class="md-ellipsis">
+      XMLtoJSON
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    License
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../print_page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Print
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#xfind" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xfind
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xselect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xselect
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xattr" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xattr
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xattrval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xattrval
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xdelete" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xdelete
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xinsert" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xinsert
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xreplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xreplace
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xmltojson" class="md-nav__link">
+    <span class="md-ellipsis">
+      XMLtoJSON
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>XML Utilities</h1>
+
+<p>In addition to HTML conversion, <code>XMLUtils</code> has a number of utilities to search and manipulate <code>⎕XML</code>'s 5-column matrix format. This page presents only descriptions of the utilities. Examples are found on the <a href="../examples/">examples page</a>.</p>
+<h3 id="xfind"><code>Xfind</code></h3>
+<p><code>Xfind</code> finds XML elements matching criteria you specify. The criteria maps closely to the columns of a <code>⎕XML</code> matrix.</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>bv ← xml Xfind criteria</code></td>
+</tr>
+<tr>
+<td><code>criteria</code></td>
+<td>A delimited character vector where each segment is a filter to be applied to a column of <code>xml</code>. The first character in <code>criteria</code> is used as the delimiter. Empty segments are not used in the search. All textual searches are case insensitive.<br/><pre style="font-family:APL;">      specs ← '/level/element/content/attribute/attributeValue/type'</pre>Where:<ul><li><code>level</code> is the nesting level (<code>xml[;1]</code>). <code>level</code> can be any of<ul><li>a single level number</li><li>a space-delimited list of level numbers</li><li><code>n+</code> means any level greater than or equal to <code>n</code></li><li><code>n-</code> means any level less than or equal to <code>n</code></li><li><code>n-m</code> means any level between <code>n</code> and <code>m</code> inclusive</li></ul></li><li><code>element</code> are space-delimited element names to match (<code>xml[;2]</code>). For example <code>'th td'</code> will match all <code>th</code> and <code>td</code> elements.</li><li><code>content</code> is a string to search for in the element's content (<code>xml[;3]</code>)</li><li><code>attribute</code> are space-delimited attribute names to match (column 1 of <code>xml[;4]</code>)</li><li><code>attributeValue</code> is string to search for in the attribute values (column 2 of <code>xml[;4]</code>)</li><li><code>type</code> is a space-delimited list of <code>⎕XML</code> types to match (<code>xml[;5]</code>)</li></ul></td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>A 5-column <code>⎕XML</code> matrix</td>
+</tr>
+<tr>
+<td><code>bv</code></td>
+<td>A Boolean vector marking rows in <code>xml</code> that match the search criteria in <code>criteria</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="xselect"><code>Xselect</code></h3>
+<p>Having found XML elements using <code>Xfind</code>, you can use <code>Xselect</code> to select them and optionally their immediate descendants.</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>elements ← {kids} (xml Xselect) bv</code></td>
+</tr>
+<tr>
+<td><code>bv</code></td>
+<td>A Boolean vector with as many elements as rows in <code>xml</code>. <code>1</code>'s indicate an element to retrieve.</td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>A 5-column <code>⎕XML</code> matrix</td>
+</tr>
+<tr>
+<td><code>kids</code></td>
+<td>An optional Boolean scalar indicating whether to in include descendent elements. Valid values are:<ul><li><code>0</code> <strong>do not</strong> include descendents</li><li><code>1</code> (the default) include descendent elements</td>
+</tr>
+<tr>
+<td><code>elements</code></td>
+<td>A vector containing <code>+/bv</code> elements, each of which contains the <code>xml</code> element corresponding to a <code>1</code> in <code>bv</code> and, if <code>kids</code> is 1, its immediately following descendant elements.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xattr"><code>Xattr</code></h3>
+<p><code>Xattr</code> retrieves the values of all attributes in <code>xml</code> that match the attribute name(s) you supply.</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>values ← {ic} (xml Xattr) attr</code></td>
+</tr>
+<tr>
+<td><code>attr</code></td>
+<td>A vector of space-separated attribute names, or a vector of such vectors.</td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>A single 5-column <code>⎕XML</code>-style matrix or vector of such matrices</td>
+</tr>
+<tr>
+<td><code>ic</code></td>
+<td>An optional Boolean indicating whether to perform a case-insensitive comparison on the attribute names. Valid values are:<ul><li><code>0</code> (the default) comparisons <strong>are</strong> case sensitive</li><li><code>1</code> comparisons <strong>are not</strong> case sensitive</li></ul></td>
+</tr>
+<tr>
+<td><code>values</code></td>
+<td>The shape of <code>values</code> depends on the shapes of <code>xml</code> and <code>attr</code>.<ul><li>If <code>xml</code> is a <code>⎕XML</code>-style matrix, <code>values</code> will be a vector of character vectors containing the values of matching attributes in <code>xml</code>.</li><li>If <code>xml</code> is a vector of <code>⎕XML</code>-style matrices, <code>values</code> will be a vector with as many elements as <code>xml</code>, with each vector containing a vector of character vectors containing the values of attributes found in each matrix in <code>xml</code></td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>XML and XHTML attribute names are case sensitive, while HTML attribute names are not.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xattrval"><code>Xattrval</code></h3>
+<p><code>Xattrval</code> is a shortcut function that essentially does an <code>Xfind</code>, <code>Xselect</code>, and <code>Xattr</code>.</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>values ← {ic} (xml Xattrval) criteria</code></td>
+</tr>
+<tr>
+<td><code>criteria</code></td>
+<td>The same as <code>criteria</code> described in <code>Xfind</code> above.<br/>A delimited character vector where each segment is a filter to be applied to a column of <code>xml</code>. Empty segments are not used in the search. All textual searches are case insensitive.<br/><pre style="font-family:APL;">      specs ← '/level/element/content/attribute/attributeValue/type'</pre>Where:<ul><li><code>level</code> is the nesting level (<code>xml[;1]</code>). <code>n+</code> means any level greater than or equal to <code>n</code>. <code>n-</code> means any level less than or equal to <code>n</code>. <code>n-m</code> means any level between <code>n</code> and <code>m</code> inclusive.</li><li><code>element</code> are space-delimited element names to match (<code>xml[;2]</code>). For example <code>'th td'</code> will match all <code>th</code> and <code>td</code> elements.</li><li><code>content</code> is a string to search for in the element's content (<code>xml[;3]</code>)</li><li><code>attribute</code> are space-delimited attribute names to match (column 1 of <code>xml[;4]</code>)</li><li><code>attributeValue</code> is string to search for in the attribute values (column 2 of <code>xml[;4]</code>)</li><li><code>type</code> is a space-delimited list of <code>⎕XML</code> types to match (<code>xml[;5]</code>)</li></ul></td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>A single 5-column <code>⎕XML</code> matrix</td>
+</tr>
+<tr>
+<td><code>ic</code></td>
+<td>An optional Boolean indicating whether to perform a case-insensitive comparison on the attribute names. Valid values are:<ul><li><code>0</code> (the default) comparisons <strong>are</strong> case sensitive</li><li><code>1</code> comparisons <strong>are not</strong> case sensitive</li></ul></td>
+</tr>
+<tr>
+<td><code>values</code></td>
+<td>The shape of <code>values</code> depends on the shapes of <code>xml</code> and <code>attr</code>.<ul><li>If <code>xml</code> is a <code>⎕XML</code>-style matrix, <code>values</code> will be a vector of character vectors containing the values of matching attributes in <code>xml</code>.</li><li>If <code>xml</code> is a vector of <code>⎕XML</code>-style matrices, <code>values</code> will be a vector with as many elements as <code>xml</code>, with each vector containing a vector of character vectors containing the values of attributes found in each matrix in <code>xml</code></td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>XML and XHTML attribute names are case sensitive, while HTML attribute names are not.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdelete"><code>Xdelete</code></h3>
+<p><code>Xdelete</code> deletes elements and optionally their descendants from an XML structure</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>r ← {kids} (xml Xdelete) criteria</code></td>
+</tr>
+<tr>
+<td><code>criteria</code></td>
+<td>Either the same as <code>criteria</code> described in <code>Xfind</code> above or a Boolean vector marking the elements to be deleted</td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>Either a single 5-column <code>⎕XML</code> matrix, or a string containing valid XML</td>
+</tr>
+<tr>
+<td><code>kids</code></td>
+<td>An optional Boolean indicating whether to delete just the elements specified in <code>criteria</code> or their descendants as well. Valid values are:<ul><li><code>0</code> do <strong>not</strong> delete the descendant elements</li><li><code>1</code> (the default) delete the descendant elements</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>The resulting 5-column <code>⎕XML</code> matrix after the elements have been deleted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xinsert"><code>Xinsert</code></h3>
+<p><code>Xinsert</code> inserts elements after selected elements</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>r ← ins (xml Xinsert) elements</code></td>
+</tr>
+<tr>
+<td><code>elements</code></td>
+<td>Either the same as <code>criteria</code> described in <code>Xfind</code> above or a Boolean vector marking the elements after which the new content will be inserted</td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>Either a single 5-column <code>⎕XML</code> matrix, or a string containing valid XML</td>
+</tr>
+<tr>
+<td><code>ins</code></td>
+<td>Either a single 5-column <code>⎕XML</code> matrix, or a string containing valid XML to be inserted</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>The resulting 5-column <code>⎕XML</code> matrix after the elements have been inserted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xreplace"><code>Xreplace</code></h3>
+<p><code>Xreplace</code> replaces XML elements and their descendents</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>r ← repl (xml Xreplace) elements</code></td>
+</tr>
+<tr>
+<td><code>elements</code></td>
+<td>Either the same as <code>criteria</code> described in <code>Xfind</code> above or a Boolean vector marking the elements to be replaced</td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>Either a single 5-column <code>⎕XML</code> matrix, or a string containing valid XML</td>
+</tr>
+<tr>
+<td><code>repl</code></td>
+<td>Either a single 5-column <code>⎕XML</code> matrix, or a string containing valid XML to be inserted</td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>The resulting 5-column <code>⎕XML</code> matrix after the elements have been inserted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xmltojson"><code>XMLtoJSON</code></h3>
+<p><code>XMLtoJSON</code> converts XML to JSON</p>
+<table>
+<tbody>
+<tr>
+<td>Syntax</td>
+<td><code>json ← {convert} XMLtoJSON xml</code></td>
+</tr>
+<tr>
+<td><code>xml</code></td>
+<td>Character vector of valid XML</td>
+</tr>
+<tr>
+<td><code>convert</code></td>
+<td>If set to <code>¯1</code>, element values that contain only digits will be converted to numbers.</td>
+</tr>
+<tr>
+<td><code>json</code></td>
+<td>Character vector JSON representation of the XML (suitable for passing to <code>⎕JSON</code>)</td>
+</tr>
+<tr>
+<td>Notes</td>
+<td>Element attributes in the XML are converted to named elements in the JSON representation.</br><code>XMLtoJSON '&lt;foo goo="moo"&gt;&lt;boo&gt;hoo&lt;/boo&gt;&lt;/foo&gt;</code></br><code>{"foo":{"goo":"moo","boo":"hoo"}}</code></pre></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Made with <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener"><strong>Material for MkDocs</strong></a><br/>Copyright &copy; 2025 <strong>Brian P Becker</strong>
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.instant"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+    
+  </body>
+</html>
