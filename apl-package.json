@@ -1,6 +1,7 @@
 {
   api: "XMLUtils",
   assets: "",
+  checkLICENSEfile: 1,
   description: "Utility library to convert HTML to XHTML and manipulate matrix format ⎕XML data",
   documentation: "https://bpbecker.github.io/xmlutils",
   files: "",
