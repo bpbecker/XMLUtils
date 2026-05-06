@@ -3,7 +3,7 @@
     ⎕IO←⎕ML←1
 
     ∇ r←Version
-      r←'XMLUtils' '1.2.0' '2026-02-09'
+      r←'XMLUtils' '1.2.1' '2026-05-06'
     ∇
 
     ∇ r←Documentation
@@ -312,7 +312,7 @@
           →exit⍴⍨~∨/r
       :EndIf
       :If ~0∊⍴value
-          valueHits←∨/¨value∘{∨/¨(⊂⍺)⍷lco¨⍵[;2]}¨r/xml[;4]
+          valueHits←value∘{∨/¨(⊂⍺)⍷lco¨⍵[;2]}¨r/xml[;4]
           :If ~0∊⍴attrHits
               valueHits∧←attrMask/attrHits
           :EndIf
