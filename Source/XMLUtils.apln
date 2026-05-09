@@ -3,7 +3,7 @@
     ⎕IO←⎕ML←1
 
     ∇ r←Version
-      r←'XMLUtils' '1.2.1' '2026-05-06'
+      r←'XMLUtils' '1.2.2' '2026-05-09'
     ∇
 
     ∇ r←Documentation
@@ -81,11 +81,9 @@
           ∊((⊂'"'∘,)¨@(⍺,e))⍵
       }
       fixComment←{   ⍝ '--' inside of comments are a no-no,so replace them with '=='
-          t←+/∧\'-'=⍺↓⍵   ⍝ trailing -
-          l←+/∧\'-'=⌽⍺↑⍵  ⍝ leading -
-          '!'=⍵[⍺-l]:('='@((⍺-l-2)+⍳t+l-2))⍵ ⍝ preserve beginning of comment
-          '>'=⍵[1+⍺+t]:('='@((⍺-l)+⍳t+l-2))⍵ ⍝ preserve end of comment
-          ('='@((⍺-l)+⍳t+l))⍵ ⍝ otherwise replace them all
+          b←⍺(⍵ last)'<!--' ⍝ beginning of comment
+          e←b{⍵/⍨<\⍵>⍺}⍸'-->'⍷⍵ ⍝ end of comment
+          (⍵↑⍨b+3),('--'⎕R'=='⊢(b+3)↓(e-1)↑⍵),⍵↓⍨e-1
       }
       fixAttributeCharacter←{ ⍝ fix characters in attributes that should be HTML entities
           err←⊂↓'EM' 'EN' 'Message',⍪⎕DMX.(EM EN Message)
@@ -427,7 +425,7 @@
           ⍺((↑⊃,/↓¨⍺⍺ Xselect ⍺⍺ Xfind ⍵)Xattr)1↓4⊃{⍵↑⍨4⌈≢⍵}(⊢⊂⍨⊢=⊃)⍵
       }
 
-    ∇ json←{jlev}XMLtoJSON xml;j;x;level;mask;chunk;data;name;type;⎕ML;attr;attrname;attrval
+    ∇ json←{jlev}XMLtoJSON xml;j;x;level;mask;chunk;data;name;type;⎕ML;attr;attrname;attrval;jsonType;xmlType;in
        ⍝ convert XML to JSON
        ⍝ xml is a character vector of XML
        ⍝ json is a charcter vector of JSON representation of the data in XML
@@ -435,6 +433,8 @@
        ⍝ json← ¯1 XMLtoJSON xml  ⍝ will suppress numeric conversion
      
       ⎕ML←1
+      jsonType←{4-2|⎕DR ⍵}                           ⍝ JSON datatype: 3=numeric, 4=string
+      in←{∧/≤⌿↑⌽∘(2∘⊥⍣¯1)¨⍺ ⍵}                       ⍝ bitwise inclusion  (2 in 6 → 1, 3 in 6 → 0, 3 in 7 → 1)
       :If 0=⎕NC'jlev'                                ⍝ initial call?
       :OrIf jlev=¯1
           jlev←{6::⍵ ⋄ jlev}0                        ⍝ or suppress numbers
@@ -457,10 +457,20 @@
               name←(⊂1 2)⊃chunk                      ⍝ grab the name
               data←(⊂1 3)⊃chunk                      ⍝ and the data if any
               attr←(⊂1 4)⊃chunk                      ⍝ and any attributes
-              type←(4-2|⎕DR data)*0∊⍴attr            ⍝ note the datatype, if any attributes, use object type
+              xmlType←(⊂1 5)⊃chunk                   ⍝ ⎕XML row type
+              type←(jsonType data)*0∊⍴attr           ⍝ note the datatype, if any attributes, use object type
               :If 0∊⍴name                            ⍝ if no name (we blanked it out to process arrays)
                   :If 1=≢chunk                       ⍝ only a single element?
-                      json⍪←jlev''data type          ⍝ append its entry
+                      :If 4 in xmlType               ⍝ XML character data?
+                          :If ~0∊⍴attr               ⍝ have attributes as well?
+                              json⍪←jlev'' '' 1      ⍝ have to represent as an object
+                              json⍪←(jlev+1)'value'data(jsonType data) ⍝ append append the data
+                          :Else
+                              json⍪←jlev''data type
+                          :EndIf
+                      :Else
+                          json⍪←jlev''data type
+                      :EndIf
                       :For (attrname attrval) :In ↓attr
                           json⍪←(jlev+1)attrname attrval 4 ⍝ all attributes are treated as strings
                       :EndFor
@@ -474,12 +484,20 @@
               :Else
                   :If 1=+/chunk[;1]=⊃chunk           ⍝ only one item at this level implied its an object
                       :If 1=≢chunk                   ⍝ leaf element?
-                          json⍪←jlev name data type  ⍝ append its data
+                          :If data∧⍥(~0∊⍴)attr       ⍝ have both data and attributes?
+                              json⍪←jlev name''type  ⍝ insert entry for element name
+                              json⍪←(jlev+1)'value'data(jsonType data) ⍝ insert "value" entry for element's data
+                          :Else
+                              json⍪←jlev name data type  ⍝ append its data
+                          :EndIf
                           :For (attrname attrval) :In ↓attr
                               json⍪←(jlev+1)attrname attrval 4 ⍝ all attributes are treated as strings
                           :EndFor
                       :Else
                           json⍪←jlev name'' 1        ⍝ note that its an object
+                          :If ~0∊⍴data               ⍝ do we have data as well?
+                              json⍪←(jlev+1)'value'data(jsonType data) ⍝ insert "value" entry for element's data
+                          :EndIf
                           :For (attrname attrval) :In ↓attr
                               json⍪←(jlev+1)attrname attrval 4 ⍝ all attributes are treated as strings
                           :EndFor

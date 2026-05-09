@@ -1,0 +1,214 @@
+:Namespace TestXMLtoJSON
+⍝ Tests for XMLUtils.XMLtoJSON
+⍝ Covers combinations of XML elements, attributes, text values, nesting, and arrays.
+⍝ Each test takes one (ignored) argument and returns 1=pass or a string=fail message.
+⍝
+⍝ Key behaviours verified:
+⍝   • Element names are sorted alphabetically before becoming JSON keys.
+⍝   • Attributes are emitted in source order, before recursed child content.
+⍝   • When a leaf element has both text content and attributes, the text goes under
+⍝     a "value" key that is emitted before the attribute keys.
+⍝   • Attribute values are always JSON strings, even when numeric-looking.
+⍝   • By default, element text that ⎕VFI parses as a number converts to a JSON number.
+⍝   • Passing ¯1 as the left argument suppresses numeric conversion.
+⍝   • Two or more sibling elements sharing the same tag name become a JSON array.
+
+    ⎕IO←⎕ML←1
+
+    ⍝ Helper: compare JSON strings, returning 1 for pass or a diff string for fail
+    check←{res←⍺≡⍵ ⋄ res:1 ⋄ 'Expected: ',⍺,⎕UCS 10,'Actual:   ',⍵}
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Elements — basic text, numeric, empty leaf elements
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Elements_001 _
+    ⍝ Simple leaf element with string value
+      :Access Public
+      r←'{"root":{"item":"hello"}}' check #.XMLUtils.XMLtoJSON '<root><item>hello</item></root>'
+    ∇
+
+    ∇ r←Test_Elements_002 _
+    ⍝ Integer-valued element is auto-converted to a JSON number
+      :Access Public
+      r←'{"root":{"count":42}}' check #.XMLUtils.XMLtoJSON '<root><count>42</count></root>'
+    ∇
+
+    ∇ r←Test_Elements_003 _
+    ⍝ Float-valued element is auto-converted to a JSON number
+      :Access Public
+      r←'{"root":{"pi":3.14}}' check #.XMLUtils.XMLtoJSON '<root><pi>3.14</pi></root>'
+    ∇
+
+    ∇ r←Test_Elements_004 _
+    ⍝ Numeric conversion is suppressed when left argument is ¯1
+      :Access Public
+      r←'{"root":{"count":"42"}}' check ¯1 #.XMLUtils.XMLtoJSON '<root><count>42</count></root>'
+    ∇
+
+    ∇ r←Test_Elements_005 _
+    ⍝ Self-closing (empty) element produces an empty string value
+      :Access Public
+      r←'{"root":{"empty":""}}' check #.XMLUtils.XMLtoJSON '<root><empty/></root>'
+    ∇
+
+    ∇ r←Test_Elements_006 _
+    ⍝ Multiple differently-named siblings become alphabetically sorted keys
+      :Access Public
+      r←'{"root":{"age":30,"name":"Alice"}}' check #.XMLUtils.XMLtoJSON '<root><name>Alice</name><age>30</age></root>'
+    ∇
+
+    ∇ r←Test_Elements_007 _
+    ⍝ APL high-minus (¯) in element text is converted to a negative JSON number
+      :Access Public
+      r←'{"root":{"val":-7}}' check #.XMLUtils.XMLtoJSON '<root><val>¯7</val></root>'
+    ∇
+
+    ⍝ ──────────────────────────────────────────────────────────
+    ⍝ Group: Attrs — attribute combinations
+    ⍝ ──────────────────────────────────────────────────────────
+
+    ∇ r←Test_Attrs_001 _
+    ⍝ Attribute-only leaf becomes an object whose key is the attribute name
+      :Access Public
+      r←'{"foo":{"id":"1"}}' check #.XMLUtils.XMLtoJSON '<foo id="1"/>'
+    ∇
+
+    ∇ r←Test_Attrs_002 _
+    ⍝ Multiple attributes are emitted in source order (not alphabetically)
+      :Access Public
+      r←'{"foo":{"id":"1","class":"x"}}' check #.XMLUtils.XMLtoJSON '<foo id="1" class="x"/>'
+    ∇
+
+    ∇ r←Test_Attrs_003 _
+    ⍝ Attribute value is always a JSON string, even when the value looks numeric
+      :Access Public
+      r←'{"item":{"count":"99"}}' check #.XMLUtils.XMLtoJSON '<item count="99"/>'
+    ∇
+
+    ∇ r←Test_Attrs_004 _
+    ⍝ Leaf with text + attribute: text goes under "value" key, emitted before the attribute
+      :Access Public
+      r←'{"foo":{"value":"hello","id":"1"}}' check #.XMLUtils.XMLtoJSON '<foo id="1">hello</foo>'
+    ∇
+
+    ∇ r←Test_Attrs_005 _
+    ⍝ Leaf with numeric text + attribute: "value" is a JSON number; attribute stays a string
+      :Access Public
+      r←'{"item":{"value":42,"count":"3"}}' check #.XMLUtils.XMLtoJSON '<item count="3">42</item>'
+    ∇
+
+    ∇ r←Test_Attrs_006 _
+    ⍝ Attribute on parent alongside a child element (documented example)
+    ⍝ Attribute is emitted before recursed child content
+      :Access Public
+      r←'{"foo":{"goo":"moo","boo":"hoo"}}' check #.XMLUtils.XMLtoJSON '<foo goo="moo"><boo>hoo</boo></foo>'
+    ∇
+
+    ∇ r←Test_Attrs_007 _
+    ⍝ Multiple attributes on a parent alongside multiple child elements
+    ⍝ Attributes appear in source order; child elements are sorted alphabetically
+      :Access Public
+      r←'{"root":{"id":"x","rev":"2","bar":"b","baz":"c"}}' check #.XMLUtils.XMLtoJSON '<root id="x" rev="2"><baz>c</baz><bar>b</bar></root>'
+    ∇
+
+    ⍝ ──────────────────────────────────────────────────────────
+    ⍝ Group: Nesting — depth and sibling structure
+    ⍝ ──────────────────────────────────────────────────────────
+
+    ∇ r←Test_Nesting_001 _
+    ⍝ Two levels of nesting
+      :Access Public
+      r←'{"a":{"b":{"c":"d"}}}' check #.XMLUtils.XMLtoJSON '<a><b><c>d</c></b></a>'
+    ∇
+
+    ∇ r←Test_Nesting_002 _
+    ⍝ Three levels of nesting
+      :Access Public
+      r←'{"a":{"b":{"c":{"d":"deep"}}}}' check #.XMLUtils.XMLtoJSON '<a><b><c><d>deep</d></c></b></a>'
+    ∇
+
+    ∇ r←Test_Nesting_003 _
+    ⍝ Out-of-source-order siblings are sorted alphabetically in the JSON output
+      :Access Public
+      r←'{"root":{"child1":{"leaf":"v"},"child2":"x"}}' check #.XMLUtils.XMLtoJSON '<root><child2>x</child2><child1><leaf>v</leaf></child1></root>'
+    ∇
+
+    ⍝ ──────────────────────────────────────────────────────────
+    ⍝ Group: Arrays — repeated element names
+    ⍝ ──────────────────────────────────────────────────────────
+
+    ∇ r←Test_Arrays_001 _
+    ⍝ Two same-named scalar siblings become a JSON array of strings
+      :Access Public
+      r←'{"root":{"item":["a","b"]}}' check #.XMLUtils.XMLtoJSON '<root><item>a</item><item>b</item></root>'
+    ∇
+
+    ∇ r←Test_Arrays_002 _
+    ⍝ Three same-named numeric siblings produce a numeric JSON array
+      :Access Public
+      r←'{"root":{"item":[1,2,3]}}' check #.XMLUtils.XMLtoJSON '<root><item>1</item><item>2</item><item>3</item></root>'
+    ∇
+
+    ∇ r←Test_Arrays_003 _
+    ⍝ Array of complex elements (each with their own children); children sorted alphabetically
+      :Access Public
+      r←'{"root":{"item":[{"a":1,"b":"x"},{"a":2,"b":"y"}]}}' check #.XMLUtils.XMLtoJSON '<root><item><a>1</a><b>x</b></item><item><a>2</a><b>y</b></item></root>'
+    ∇
+
+    ∇ r←Test_Arrays_004 _
+    ⍝ Scalar array siblings mixed with a differently-named scalar sibling
+      :Access Public
+      r←'{"root":{"item":["a","b"],"title":"t"}}' check #.XMLUtils.XMLtoJSON '<root><title>t</title><item>a</item><item>b</item></root>'
+    ∇
+
+    ∇ r←Test_Arrays_005 _
+    ⍝ Two independent arrays of different element names under the same parent
+      :Access Public
+      r←'{"root":{"bar":["b1","b2"],"foo":["f1","f2"]}}' check #.XMLUtils.XMLtoJSON '<root><foo>f1</foo><foo>f2</foo><bar>b1</bar><bar>b2</bar></root>'
+    ∇
+
+    ∇ r←Test_Arrays_006 _
+    ⍝ RSS-like structure: channel with a scalar field and an array of item elements
+      :Access Public
+      xml←'<rss><channel><title>News</title><item><link>u1</link><title>A</title></item><item><link>u2</link><title>B</title></item></channel></rss>'
+      r←'{"rss":{"channel":{"item":[{"link":"u1","title":"A"},{"link":"u2","title":"B"}],"title":"News"}}}' check #.XMLUtils.XMLtoJSON xml
+    ∇
+
+    ∇ r←Test_Arrays_007 _
+    ⍝ Attribute on parent, scalar string array as children, scalar non-array sibling
+      :Access Public
+      r←'{"catalog":{"edition":"1","book":["Dune","Foundation"],"genre":"SF"}}' check #.XMLUtils.XMLtoJSON '<catalog edition="1"><genre>SF</genre><book>Dune</book><book>Foundation</book></catalog>'
+    ∇
+
+    ⍝ ──────────────────────────────────────────────────────────
+    ⍝ Group: Mixed — realistic compound structures
+    ⍝ ──────────────────────────────────────────────────────────
+
+    ∇ r←Test_Mixed_001 _
+    ⍝ Attribute on root, array of complex item children, scalar sibling
+      :Access Public
+      xml←'<store open="1"><name>My Store</name><item><sku>A1</sku><qty>3</qty></item><item><sku>B2</sku><qty>7</qty></item></store>'
+      r←'{"store":{"open":"1","item":[{"qty":3,"sku":"A1"},{"qty":7,"sku":"B2"}],"name":"My Store"}}' check #.XMLUtils.XMLtoJSON xml
+    ∇
+
+    ∇ r←Test_Mixed_002 _
+    ⍝ Numeric conversion suppressed across an entire structure
+      :Access Public
+      r←'{"data":{"x":"10","y":"20"}}' check ¯1 #.XMLUtils.XMLtoJSON '<data><x>10</x><y>20</y></data>'
+    ∇
+
+    ∇ r←Test_Mixed_003 _
+    ⍝ "true"/"false" are not converted to JSON booleans; "0" becomes 0
+      :Access Public
+      r←'{"root":{"flag":"true","n":0}}' check #.XMLUtils.XMLtoJSON '<root><flag>true</flag><n>0</n></root>'
+    ∇
+
+    ∇ r←Test_Mixed_004 _
+    ⍝ Deeply nested structure with mixed scalar and object children
+      :Access Public
+      xml←'<config><db><host>localhost</host><port>5432</port></db><app><name>myapp</name><debug>0</debug></app></config>'
+      r←'{"config":{"app":{"debug":0,"name":"myapp"},"db":{"host":"localhost","port":5432}}}' check #.XMLUtils.XMLtoJSON xml
+    ∇
+
+:EndNamespace

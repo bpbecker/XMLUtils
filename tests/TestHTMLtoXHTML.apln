@@ -1,0 +1,279 @@
+:Namespace TestHTMLtoXHTML
+⍝ Tests for XMLUtils.HTMLtoXHTML
+⍝ Covers the full range of HTML-to-XHTML fixup behaviours.
+⍝ Each test takes one (ignored) argument and returns 1=pass or a string=fail message.
+⍝
+⍝ Key behaviours verified:
+⍝   • Valid XHTML passes through unchanged (round-trip)
+⍝   • Void elements (br, hr, img, input, meta, link, …) are self-closed
+⍝   • The </br> typo is corrected to <br/>
+⍝   • Unquoted attribute values are wrapped in double quotes
+⍝   • Boolean attributes (no =) are expanded to name="name"
+⍝   • & in text is replaced with &amp;
+⍝   • Script element content is wrapped with //<![CDATA[ … //]]>
+⍝   • HTML comments are preserved unchanged via Markup Preserve
+⍝   • Orphaned and duplicate closing tags are removed; stray < becomes &lt;
+⍝   • Trailing whitespace and vertical-tab characters are stripped
+⍝   • The verbose left argument controls display without affecting the result
+⍝   • The documented complex example from examples.md round-trips correctly
+
+    ⎕IO←⎕ML←1
+
+    ⍝ Parse valid XHTML to ⎕XML matrix (shorthand for expected-value construction)
+    X←{⎕XML ⍵}
+
+    ⍝ Parse with markup-preserve flags (matches the flags HTMLtoXHTML itself uses)
+    XP←{(⎕XML⍠('Markup' 'Preserve')('UnknownEntity' 'Preserve'))⍵}
+
+    ⍝ Helper: compare ⎕XML matrices, returning 1=pass or a diff string=fail
+    check←{⍺≡⍵:1 ⋄ 'Expected: ',(⎕XML ⍺),⎕UCS 10,'Actual:   ',(⎕XML ⍵)}
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Basic — already-valid HTML/XHTML passes through
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Basic_001 _
+    ⍝ Simple element with text content
+      :Access Public
+      r←(X '<p>hello</p>') check #.XMLUtils.HTMLtoXHTML '<p>hello</p>'
+    ∇
+
+    ∇ r←Test_Basic_002 _
+    ⍝ Element with a quoted attribute
+      :Access Public
+      r←(X '<h2 id="foo">Hello</h2>') check #.XMLUtils.HTMLtoXHTML '<h2 id="foo">Hello</h2>'
+    ∇
+
+    ∇ r←Test_Basic_003 _
+    ⍝ Nested elements, no fixup required
+      :Access Public
+      r←(X '<div><p>text</p></div>') check #.XMLUtils.HTMLtoXHTML '<div><p>text</p></div>'
+    ∇
+
+    ∇ r←Test_Basic_004 _
+    ⍝ Element with multiple attributes
+      :Access Public
+      r←(X '<a href="http://example.com" title="t">link</a>') check #.XMLUtils.HTMLtoXHTML '<a href="http://example.com" title="t">link</a>'
+    ∇
+
+    ∇ r←Test_Basic_005 _
+    ⍝ Self-closed element in valid XHTML — no change needed
+      :Access Public
+      r←(X '<br/>') check #.XMLUtils.HTMLtoXHTML '<br/>'
+    ∇
+
+    ∇ r←Test_Basic_006 _
+    ⍝ The documented example from examples.md (complex mixed content)
+      :Access Public
+      html←'<a class="top">Hello<b id="foo">World<c class="middle blue">!<b/></c><d/></b><b class="blue">How</b>Are You?</a>'
+      r←(X html) check #.XMLUtils.HTMLtoXHTML html
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: VoidElements — void HTML elements get self-closed
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_VoidElements_001 _
+    ⍝ <br> (no slash) → <br/>
+      :Access Public
+      r←(X '<br/>') check #.XMLUtils.HTMLtoXHTML '<br>'
+    ∇
+
+    ∇ r←Test_VoidElements_002 _
+    ⍝ </br> typo → <br/>
+      :Access Public
+      r←(X '<br/>') check #.XMLUtils.HTMLtoXHTML '</br>'
+    ∇
+
+    ∇ r←Test_VoidElements_003 _
+    ⍝ <hr> → <hr/>
+      :Access Public
+      r←(X '<hr/>') check #.XMLUtils.HTMLtoXHTML '<hr>'
+    ∇
+
+    ∇ r←Test_VoidElements_004 _
+    ⍝ <img src="..."> → <img src="..."/>
+      :Access Public
+      r←(X '<img src="logo.png"/>') check #.XMLUtils.HTMLtoXHTML '<img src="logo.png">'
+    ∇
+
+    ∇ r←Test_VoidElements_005 _
+    ⍝ <input type="text"> → <input type="text"/>
+      :Access Public
+      r←(X '<input type="text"/>') check #.XMLUtils.HTMLtoXHTML '<input type="text">'
+    ∇
+
+    ∇ r←Test_VoidElements_006 _
+    ⍝ <meta charset="utf-8"> → <meta charset="utf-8"/>
+      :Access Public
+      r←(X '<meta charset="utf-8"/>') check #.XMLUtils.HTMLtoXHTML '<meta charset="utf-8">'
+    ∇
+
+    ∇ r←Test_VoidElements_007 _
+    ⍝ <link rel="stylesheet" href="s.css"> → self-closed
+      :Access Public
+      r←(X '<link rel="stylesheet" href="s.css"/>') check #.XMLUtils.HTMLtoXHTML '<link rel="stylesheet" href="s.css">'
+    ∇
+
+    ∇ r←Test_VoidElements_008 _
+    ⍝ void element inside a container element
+      :Access Public
+      r←(X '<p>line1<br/>line2</p>') check #.XMLUtils.HTMLtoXHTML '<p>line1<br>line2</p>'
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Attrs — attribute fixup
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Attrs_001 _
+    ⍝ Unquoted attribute value is wrapped in double quotes
+      :Access Public
+      r←(X '<a href="http://example.com">link</a>') check #.XMLUtils.HTMLtoXHTML '<a href=http://example.com>link</a>'
+    ∇
+
+    ∇ r←Test_Attrs_002 _
+    ⍝ Boolean attribute without = is expanded to name="name"
+      :Access Public
+      r←(X '<input readonly="readonly"/>') check #.XMLUtils.HTMLtoXHTML '<input readonly>'
+    ∇
+
+    ∇ r←Test_Attrs_003 _
+    ⍝ Boolean attribute on a non-void element
+      :Access Public
+      r←(X '<button disabled="disabled">Click</button>') check #.XMLUtils.HTMLtoXHTML '<button disabled>Click</button>'
+    ∇
+
+    ∇ r←Test_Attrs_004 _
+    ⍝ Attribute value containing an ampersand is entity-encoded
+      :Access Public
+      r←(X '<a href="a.html?x=1&amp;y=2">link</a>') check #.XMLUtils.HTMLtoXHTML '<a href="a.html?x=1&amp;y=2">link</a>'
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Ampersand — bare & in text is replaced with &amp;
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Ampersand_001 _
+    ⍝ Single bare & in text content
+      :Access Public
+      r←(X '<p>a &amp; b</p>') check #.XMLUtils.HTMLtoXHTML '<p>a & b</p>'
+    ∇
+
+    ∇ r←Test_Ampersand_002 _
+    ⍝ Multiple bare & in text content
+      :Access Public
+      r←(X '<p>x &amp; y &amp; z</p>') check #.XMLUtils.HTMLtoXHTML '<p>x & y & z</p>'
+    ∇
+
+    ∇ r←Test_Ampersand_003 _
+    ⍝ Valid named entity &amp; is left alone
+      :Access Public
+      r←(X '<p>foo &amp; bar</p>') check #.XMLUtils.HTMLtoXHTML '<p>foo &amp; bar</p>'
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Script — script content is CDATA-wrapped
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Script_001 _
+    ⍝ Script with < triggers CDATA wrapping
+      :Access Public
+      html←'<script>if(a<b){alert(1)}</script>'
+      fixed←'<script>//<![CDATA[if(a<b){alert(1)}//]]></script>'
+      r←(XP fixed) check #.XMLUtils.HTMLtoXHTML html
+    ∇
+
+    ∇ r←Test_Script_002 _
+    ⍝ Script without any special characters needs no CDATA wrapping
+      :Access Public
+      html←'<script>var x=1;</script>'
+      r←(X html) check #.XMLUtils.HTMLtoXHTML html
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Comment — -- inside comments is replaced with ==
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Comment_001 _
+    ⍝ Valid HTML comment inside an element passes through unchanged
+      :Access Public
+      r←(XP '<p><!-- remark --></p>') check #.XMLUtils.HTMLtoXHTML '<p><!-- remark --></p>'
+    ∇
+
+    ∇ r←Test_Comment_002 _
+    ⍝ Valid comment with no special sequences is preserved as-is
+      :Access Public
+      r←(XP '<p><!-- this is fine --></p>') check #.XMLUtils.HTMLtoXHTML '<p><!-- this is fine --></p>'
+    ∇
+
+    ∇ r←Test_Comment_003 _
+    ⍝ -- inside a comment wrapped in an element is replaced with ==
+      :Access Public
+      r←(XP '<p><!--a==b--></p>') check #.XMLUtils.HTMLtoXHTML '<p><!--a--b--></p>'
+    ∇
+
+    ∇ r←Test_Comment_004 _
+    ⍝ Bare comment (no root element): -- is replaced with ==
+      :Access Public
+      r←(XP '<!--a==b-->') check #.XMLUtils.HTMLtoXHTML '<!--a--b-->'
+    ∇
+
+    ∇ r←Test_Comment_005 _
+    ⍝ Two sibling elements each with an invalid comment: both are fixed
+      :Access Public
+      r←(XP '<p><!--a==b--></p><p><!--c==d--></p>') check #.XMLUtils.HTMLtoXHTML '<p><!--a--b--></p><p><!--c--d--></p>'
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: TagFix — mismatched and orphaned tags are corrected
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_TagFix_001 _
+    ⍝ Orphaned (duplicate) closing tag is removed
+      :Access Public
+      r←(X '<p>text</p>') check #.XMLUtils.HTMLtoXHTML '<p>text</p></p>'
+    ∇
+
+    ∇ r←Test_TagFix_002 _
+    ⍝ Extra closing tag after properly-closed nesting is removed
+      :Access Public
+      r←(X '<div><span>text</span></div>') check #.XMLUtils.HTMLtoXHTML '<div><span>text</span></div></div>'
+    ∇
+
+    ∇ r←Test_TagFix_003 _
+    ⍝ Stray < in text content is replaced with &lt;
+      :Access Public
+      r←(X '<p>a &lt; b</p>') check #.XMLUtils.HTMLtoXHTML '<p>a < b</p>'
+    ∇
+
+    ⍝ ─────────────────────────────────────────────────────────────
+    ⍝ Group: Misc — preprocessing and miscellaneous edge cases
+    ⍝ ─────────────────────────────────────────────────────────────
+
+    ∇ r←Test_Misc_001 _
+    ⍝ Trailing spaces and newlines are stripped before parsing
+      :Access Public
+      r←(X '<p>hello</p>') check #.XMLUtils.HTMLtoXHTML '<p>hello</p>   ',⎕UCS 10 13
+    ∇
+
+    ∇ r←Test_Misc_002 _
+    ⍝ Vertical-tab characters (U+000B) are removed from content
+      :Access Public
+      html←'<p>hel',(⎕UCS 11),'lo</p>'
+      r←(X '<p>hello</p>') check #.XMLUtils.HTMLtoXHTML html
+    ∇
+
+    ∇ r←Test_Misc_003 _
+    ⍝ verbose=0 (explicit) returns the same result as the default (no left argument)
+      :Access Public
+      html←'<p>a & b</p>'
+      r←(#.XMLUtils.HTMLtoXHTML html) check 0 #.XMLUtils.HTMLtoXHTML html
+    ∇
+
+    ∇ r←Test_Misc_004 _
+    ⍝ Empty string input produces a 0-row 5-column matrix
+      :Access Public
+      r←(0 5)≡⍴#.XMLUtils.HTMLtoXHTML ''
+    ∇
+
+:EndNamespace
